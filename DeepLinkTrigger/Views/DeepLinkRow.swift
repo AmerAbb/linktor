@@ -69,6 +69,7 @@ struct DeepLinkRow: View {
                     onTrigger: onTrigger,
                     onSavePreset: onSavePreset
                 )
+                .id(link.id)
                 .padding(.horizontal, 8)
                 .padding(.bottom, 6)
                 .transition(.opacity.combined(with: .move(edge: .top)))

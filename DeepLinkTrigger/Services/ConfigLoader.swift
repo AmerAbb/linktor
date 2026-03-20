@@ -72,6 +72,8 @@ final class ConfigLoader {
             return config
         } catch let error as DecodingError {
             throw ConfigError.parseError(error.localizedDescription)
+        } catch {
+            throw ConfigError.parseError(error.localizedDescription)
         }
     }
 }

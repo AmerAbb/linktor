@@ -9,6 +9,7 @@ struct MainPopoverView: View {
     @State private var showQuickAdd = false
     @State private var expandedLinkID: UUID?
     @State private var triggerStatus: TriggerStatus?
+    @State private var statusClearID = 0
 
     private let configLoader = ConfigLoader()
     private let simulatorService = SimulatorService()
@@ -90,6 +91,12 @@ struct MainPopoverView: View {
             }
             .buttonStyle(.borderless)
             .help("Select project folder")
+
+            Button(action: { NSApplication.shared.terminate(nil) }) {
+                Image(systemName: "xmark.circle")
+            }
+            .buttonStyle(.borderless)
+            .help("Quit DeepLink Trigger")
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
@@ -274,7 +281,7 @@ struct MainPopoverView: View {
 
         // Load manual links
         let manualLinks = storageService.loadManualLinks(for: path)
-        allLinks += manualLinks.map { DeepLink.manual(name: $0.name, url: $0.url) }
+        allLinks += manualLinks.map { DeepLink.manual(id: $0.id, name: $0.name, url: $0.url) }
 
         // Load presets
         let presets = storageService.loadPresets(for: path)
@@ -296,6 +303,7 @@ struct MainPopoverView: View {
     private func triggerLink(url: String) {
         guard let platform = detectedPlatform else {
             triggerStatus = .failure("Could not detect platform — select a project folder")
+            scheduleClearStatus()
             return
         }
         Task {
@@ -304,6 +312,18 @@ struct MainPopoverView: View {
                 triggerStatus = .success(url)
             } catch {
                 triggerStatus = .failure(error.localizedDescription)
+            }
+            scheduleClearStatus()
+        }
+    }
+
+    private func scheduleClearStatus() {
+        statusClearID += 1
+        let currentID = statusClearID
+        Task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            if statusClearID == currentID {
+                withAnimation { triggerStatus = nil }
             }
         }
     }

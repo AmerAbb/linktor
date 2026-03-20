@@ -7,7 +7,7 @@ struct DeepLinkConfig: Codable {
 }
 
 struct LinkDefinition: Codable, Identifiable {
-    var id: String { name + path }
+    var id: String { "\(name)|\(path)" }
     let name: String
     let path: String
     let params: [String: ParamDefinition]?

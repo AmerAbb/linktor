@@ -40,9 +40,9 @@ struct DeepLink: Identifiable, Hashable {
         )
     }
 
-    static func manual(name: String, url: String) -> DeepLink {
+    static func manual(id: UUID, name: String, url: String) -> DeepLink {
         DeepLink(
-            id: UUID(),
+            id: id,
             name: name,
             path: url,
             scheme: "",

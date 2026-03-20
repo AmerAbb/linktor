@@ -42,8 +42,12 @@ final class StorageService {
     }
 
     func saveManualLinks(_ links: [ManualLink], for projectPath: String) {
-        let data = try? JSONEncoder().encode(links)
-        defaults.set(data, forKey: Keys.manualLinks(for: projectPath))
+        do {
+            let data = try JSONEncoder().encode(links)
+            defaults.set(data, forKey: Keys.manualLinks(for: projectPath))
+        } catch {
+            print("Failed to encode manual links: \(error)")
+        }
     }
 
     func addManualLink(name: String, url: String, for projectPath: String) {
@@ -68,8 +72,12 @@ final class StorageService {
     }
 
     func savePresets(_ presets: [Preset], for projectPath: String) {
-        let data = try? JSONEncoder().encode(presets)
-        defaults.set(data, forKey: Keys.presets(for: projectPath))
+        do {
+            let data = try JSONEncoder().encode(presets)
+            defaults.set(data, forKey: Keys.presets(for: projectPath))
+        } catch {
+            print("Failed to encode presets: \(error)")
+        }
     }
 
     func addPreset(_ preset: Preset, for projectPath: String) {

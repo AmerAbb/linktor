@@ -23,9 +23,10 @@ struct URLBuilder {
         // Substitute path parameters: /product/{productId} → /product/12345
         for param in deepLink.pathParams {
             let value = pathValues[param.name] ?? param.defaultValue
+            let encoded = value.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed) ?? value
             resolvedPath = resolvedPath.replacingOccurrences(
                 of: "{\(param.name)}",
-                with: value
+                with: encoded
             )
         }
 

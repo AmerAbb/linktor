@@ -28,11 +28,13 @@ struct QuickAddView: View {
                 Spacer()
 
                 Button("Add") {
-                    onAdd(name, url)
+                    onAdd(name.trimmingCharacters(in: .whitespacesAndNewlines),
+                          url.trimmingCharacters(in: .whitespacesAndNewlines))
                     dismiss()
                 }
                 .keyboardShortcut(.defaultAction)
-                .disabled(name.isEmpty || url.isEmpty)
+                .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ||
+                          url.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             }
         }
         .padding(20)

@@ -63,8 +63,10 @@ final class SimulatorService {
         let pipe = Pipe()
         process.standardOutput = pipe
         try process.run()
+        // Read before waitUntilExit to drain the pipe buffer
+        let data = pipe.fileHandleForReading.readDataToEndOfFile()
         process.waitUntilExit()
-        return String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+        return String(data: data, encoding: .utf8) ?? ""
     }
 
     private func runProcess(executable: String, arguments: [String]) async throws -> String {
@@ -78,24 +80,46 @@ final class SimulatorService {
         process.standardError = errorPipe
 
         return try await withCheckedThrowingContinuation { continuation in
-            process.terminationHandler = { proc in
-                let outputData = pipe.fileHandleForReading.readDataToEndOfFile()
-                let errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
-                let output = String(data: outputData, encoding: .utf8) ?? ""
-                let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
+            // Drain pipes concurrently on background threads to prevent
+            // pipe buffer deadlock (~64KB buffer can block the process)
+            var outputData = Data()
+            var errorData = Data()
+            let group = DispatchGroup()
 
-                if proc.terminationStatus == 0 {
-                    continuation.resume(returning: output)
-                } else {
-                    let message = errorOutput.isEmpty ? output : errorOutput
-                    continuation.resume(throwing: DeviceError.commandFailed(message.trimmingCharacters(in: .whitespacesAndNewlines)))
+            group.enter()
+            DispatchQueue.global().async {
+                outputData = pipe.fileHandleForReading.readDataToEndOfFile()
+                group.leave()
+            }
+            group.enter()
+            DispatchQueue.global().async {
+                errorData = errorPipe.fileHandleForReading.readDataToEndOfFile()
+                group.leave()
+            }
+
+            process.terminationHandler = { proc in
+                group.notify(queue: .global()) {
+                    let output = String(data: outputData, encoding: .utf8) ?? ""
+                    let errorOutput = String(data: errorData, encoding: .utf8) ?? ""
+
+                    if proc.terminationStatus == 0 {
+                        continuation.resume(returning: output)
+                    } else {
+                        let message = errorOutput.isEmpty ? output : errorOutput
+                        continuation.resume(throwing: DeviceError.commandFailed(message.trimmingCharacters(in: .whitespacesAndNewlines)))
+                    }
                 }
             }
 
             do {
                 try process.run()
             } catch {
-                continuation.resume(throwing: DeviceError.commandFailed(error.localizedDescription))
+                // Close write ends so the background reads unblock
+                pipe.fileHandleForWriting.closeFile()
+                errorPipe.fileHandleForWriting.closeFile()
+                group.notify(queue: .global()) {
+                    continuation.resume(throwing: DeviceError.commandFailed(error.localizedDescription))
+                }
             }
         }
     }
