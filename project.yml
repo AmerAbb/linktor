@@ -1,0 +1,24 @@
+name: DeepLinkTrigger
+options:
+  deploymentTarget:
+    macOS: "14.0"
+  xcodeVersion: "16.0"
+  bundleIdPrefix: com.deeplinkTrigger
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+targets:
+  DeepLinkTrigger:
+    type: application
+    platform: macOS
+    sources:
+      - DeepLinkTrigger
+    settings:
+      base:
+        INFOPLIST_FILE: DeepLinkTrigger/Info.plist
+        CODE_SIGN_ENTITLEMENTS: DeepLinkTrigger/DeepLinkTrigger.entitlements
+        PRODUCT_BUNDLE_IDENTIFIER: com.deeplinkTrigger.DeepLinkTrigger
+        MACOSX_DEPLOYMENT_TARGET: "14.0"
+        CODE_SIGN_STYLE: Automatic
+        PRODUCT_NAME: DeepLink Trigger
+        GENERATE_INFOPLIST_FILE: false

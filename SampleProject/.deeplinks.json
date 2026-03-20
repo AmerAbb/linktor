@@ -1,0 +1,49 @@
+{
+  "scheme": "myapp",
+  "links": [
+    {
+      "name": "Home",
+      "path": "/home"
+    },
+    {
+      "name": "Profile",
+      "path": "/profile"
+    },
+    {
+      "name": "Product Detail",
+      "path": "/product/{productId}",
+      "params": {
+        "productId": { "type": "string", "default": "12345" }
+      }
+    },
+    {
+      "name": "Category",
+      "path": "/category/{categoryId}/items",
+      "params": {
+        "categoryId": { "type": "string", "default": "electronics" }
+      }
+    },
+    {
+      "name": "Search",
+      "path": "/search",
+      "queryParams": {
+        "q": { "type": "string", "default": "shoes" },
+        "ref": { "type": "string", "default": "home" }
+      }
+    },
+    {
+      "name": "Settings",
+      "path": "/settings"
+    },
+    {
+      "name": "User Profile",
+      "path": "/user/{userId}/profile",
+      "params": {
+        "userId": { "type": "string", "default": "42" }
+      },
+      "queryParams": {
+        "tab": { "type": "string", "default": "overview" }
+      }
+    }
+  ]
+}
