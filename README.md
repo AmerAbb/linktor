@@ -1,0 +1,190 @@
+# DeepLink Trigger
+
+A macOS menu bar app for triggering deep links on iOS Simulators and Android Emulators during development.
+
+![macOS](https://img.shields.io/badge/macOS-menu%20bar-blue)
+![Swift](https://img.shields.io/badge/Swift-5-orange)
+![Platform](https://img.shields.io/badge/targets-iOS%20%7C%20Android-green)
+
+## What It Does
+
+DeepLink Trigger sits in your menu bar and lets you open deep links on a running simulator/emulator with one click. You define your links in a `.deeplinks.json` file in your project root, point the app at the folder, and it builds a browsable, searchable list with editable parameters.
+
+**Key features:**
+
+- One-click deep link triggering on iOS Simulator (`xcrun simctl`) or Android Emulator (`adb`)
+- Auto-detects platform based on project files (`.xcodeproj` = iOS, `build.gradle` = Android)
+- Parameterized URLs with editable path and query parameters
+- Save presets for frequently-used parameter combinations
+- Quick-add manual links without editing the config file
+- Search/filter across all links
+- Refresh button to reload config without restarting
+
+## Installation
+
+1. Download or build the app from source using Xcode
+2. Move `DeepLink Trigger.app` to your Applications folder
+3. Launch it — the link icon (🔗) appears in your menu bar
+
+### Building from Source
+
+```bash
+# Using xcodebuild
+xcodebuild -project DeepLinkTrigger.xcodeproj -scheme DeepLinkTrigger -configuration Release
+
+# Or using XcodeGen + Xcode
+xcodegen generate
+open DeepLinkTrigger.xcodeproj
+```
+
+## Quick Start
+
+1. Create a `.deeplinks.json` file in your project root (see format below)
+2. Click the menu bar icon and select your project folder
+3. Your links appear — click any link to open it on the booted simulator/emulator
+
+## `.deeplinks.json` Configuration
+
+Place this file in the root of your project directory. The app reads it to build your link library.
+
+### Minimal Example
+
+```json
+{
+  "scheme": "myapp",
+  "links": [
+    {
+      "name": "Home",
+      "path": "/home"
+    }
+  ]
+}
+```
+
+This produces the URL `myapp://home` and triggers it on click.
+
+### Full Example
+
+```json
+{
+  "scheme": "myapp",
+  "links": [
+    {
+      "name": "Home",
+      "path": "/home"
+    },
+    {
+      "name": "Profile",
+      "path": "/profile"
+    },
+    {
+      "name": "Product Detail",
+      "path": "/product/{productId}",
+      "params": {
+        "productId": { "type": "string", "default": "12345" }
+      }
+    },
+    {
+      "name": "Category",
+      "path": "/category/{categoryId}/items",
+      "params": {
+        "categoryId": { "type": "string", "default": "electronics" }
+      }
+    },
+    {
+      "name": "Search",
+      "path": "/search",
+      "queryParams": {
+        "q": { "type": "string", "default": "shoes" },
+        "ref": { "type": "string", "default": "home" }
+      }
+    },
+    {
+      "name": "User Profile",
+      "path": "/user/{userId}/profile",
+      "params": {
+        "userId": { "type": "string", "default": "42" }
+      },
+      "queryParams": {
+        "tab": { "type": "string", "default": "overview" }
+      }
+    }
+  ]
+}
+```
+
+### Schema Reference
+
+#### Root Object
+
+| Field    | Type   | Required | Description                                    |
+|----------|--------|----------|------------------------------------------------|
+| `scheme` | string | Yes      | Your app's URL scheme (e.g. `"myapp"` produces `myapp://`) |
+| `links`  | array  | Yes      | Array of link definitions                      |
+
+#### Link Object
+
+| Field         | Type   | Required | Description                                         |
+|---------------|--------|----------|-----------------------------------------------------|
+| `name`        | string | Yes      | Display name shown in the menu                      |
+| `path`        | string | Yes      | URL path. Use `{paramName}` for path parameters     |
+| `params`      | object | No       | Path parameter definitions, keyed by parameter name |
+| `queryParams` | object | No       | Query parameter definitions, keyed by parameter name|
+
+#### Parameter Object (used in both `params` and `queryParams`)
+
+| Field     | Type   | Required | Description                           |
+|-----------|--------|----------|---------------------------------------|
+| `type`    | string | Yes      | Parameter type (e.g. `"string"`)      |
+| `default` | string | Yes      | Default value shown in the form       |
+
+### URL Construction
+
+The app builds URLs following this pattern:
+
+```
+{scheme}://{path with params substituted}?{queryParams}
+```
+
+**Examples based on the config above:**
+
+| Link | Resulting URL |
+|------|---------------|
+| Home | `myapp://home` |
+| Product Detail | `myapp://product/12345` |
+| Search | `myapp://search?q=shoes&ref=home` |
+| User Profile | `myapp://user/42/profile?tab=overview` |
+
+Path parameters (`params`) replace `{placeholders}` in the path. Query parameters (`queryParams`) are appended as a query string. All values are editable in the UI before triggering.
+
+## Platform Detection
+
+The app auto-detects the platform when you open a project folder:
+
+| Platform | Detected when project contains              |
+|----------|----------------------------------------------|
+| iOS      | `.xcodeproj`, `.xcworkspace`, or `Package.swift` |
+| Android  | `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, or `app/build.gradle` |
+
+The same `.deeplinks.json` file works for both platforms — only the trigger mechanism changes.
+
+## Requirements
+
+- **macOS** (menu bar app)
+- **For iOS:** Xcode with a booted Simulator
+- **For Android:** ADB installed. The app checks these locations in order:
+  1. `~/Library/Android/sdk/platform-tools/adb`
+  2. `/usr/local/bin/adb`
+  3. `/opt/homebrew/bin/adb`
+  4. System PATH (`which adb`)
+
+## Usage Tips
+
+- **Presets:** For parameterized links, fill in the values you use often, then click "Save as Preset" to create a one-click shortcut
+- **Quick Add:** Use the `+` button to add a one-off link without editing the JSON file (e.g. `myapp://debug/reset`)
+- **Refresh:** After editing `.deeplinks.json`, click the refresh button (⟳) to reload without restarting the app
+- **Search:** Use the search bar to filter links by name or path
+
+## License
+
+MIT
