@@ -1,26 +1,76 @@
 import Foundation
 
 final class SimulatorService {
-    enum SimulatorError: LocalizedError {
+    enum DeviceError: LocalizedError {
         case commandFailed(String)
-        case noBootedSimulator
+        case adbNotFound
 
         var errorDescription: String? {
             switch self {
             case .commandFailed(let message):
-                return "Simulator command failed: \(message)"
-            case .noBootedSimulator:
-                return "No booted simulator found"
+                return "Command failed: \(message)"
+            case .adbNotFound:
+                return "adb not found — is Android SDK installed?"
             }
         }
     }
 
-    /// Opens a URL on the first booted simulator
+    /// Opens a URL on a device using the appropriate platform command
     @discardableResult
-    func openURL(_ urlString: String) async throws -> String {
+    func openURL(_ urlString: String, platform: Platform) async throws -> String {
+        switch platform {
+        case .ios:
+            return try await runProcess(
+                executable: "/usr/bin/xcrun",
+                arguments: ["simctl", "openurl", "booted", urlString]
+            )
+        case .android:
+            let adbPath = try findADB()
+            return try await runProcess(
+                executable: adbPath,
+                arguments: ["shell", "am", "start", "-a", "android.intent.action.VIEW", "-d", urlString]
+            )
+        }
+    }
+
+    private func findADB() throws -> String {
+        // Check common locations
+        let candidates = [
+            "\(NSHomeDirectory())/Library/Android/sdk/platform-tools/adb",
+            "/usr/local/bin/adb",
+            "/opt/homebrew/bin/adb",
+        ]
+
+        for path in candidates {
+            if FileManager.default.isExecutableFile(atPath: path) {
+                return path
+            }
+        }
+
+        // Try which
+        if let whichResult = try? runProcessSync(executable: "/usr/bin/which", arguments: ["adb"]),
+           !whichResult.isEmpty {
+            return whichResult.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+
+        throw DeviceError.adbNotFound
+    }
+
+    private func runProcessSync(executable: String, arguments: [String]) throws -> String {
         let process = Process()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/xcrun")
-        process.arguments = ["simctl", "openurl", "booted", urlString]
+        process.executableURL = URL(fileURLWithPath: executable)
+        process.arguments = arguments
+        let pipe = Pipe()
+        process.standardOutput = pipe
+        try process.run()
+        process.waitUntilExit()
+        return String(data: pipe.fileHandleForReading.readDataToEndOfFile(), encoding: .utf8) ?? ""
+    }
+
+    private func runProcess(executable: String, arguments: [String]) async throws -> String {
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: executable)
+        process.arguments = arguments
 
         let pipe = Pipe()
         let errorPipe = Pipe()
@@ -38,14 +88,14 @@ final class SimulatorService {
                     continuation.resume(returning: output)
                 } else {
                     let message = errorOutput.isEmpty ? output : errorOutput
-                    continuation.resume(throwing: SimulatorError.commandFailed(message.trimmingCharacters(in: .whitespacesAndNewlines)))
+                    continuation.resume(throwing: DeviceError.commandFailed(message.trimmingCharacters(in: .whitespacesAndNewlines)))
                 }
             }
 
             do {
                 try process.run()
             } catch {
-                continuation.resume(throwing: SimulatorError.commandFailed(error.localizedDescription))
+                continuation.resume(throwing: DeviceError.commandFailed(error.localizedDescription))
             }
         }
     }

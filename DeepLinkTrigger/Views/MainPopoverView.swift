@@ -4,6 +4,7 @@ struct MainPopoverView: View {
     @State private var searchText = ""
     @State private var deepLinks: [DeepLink] = []
     @State private var projectPath: String?
+    @State private var detectedPlatform: Platform?
     @State private var errorMessage: String?
     @State private var showQuickAdd = false
     @State private var expandedLinkID: UUID?
@@ -57,8 +58,10 @@ struct MainPopoverView: View {
     private var headerBar: some View {
         HStack {
             if let path = projectPath {
-                Image(systemName: "folder.fill")
-                    .foregroundStyle(.secondary)
+                if let platform = detectedPlatform {
+                    Image(systemName: platform.iconName)
+                        .foregroundStyle(platform == .ios ? .blue : .green)
+                }
                 Text(URL(fileURLWithPath: path).lastPathComponent)
                     .font(.headline)
                     .lineLimit(1)
@@ -233,6 +236,7 @@ struct MainPopoverView: View {
 
         if panel.runModal() == .OK, let url = panel.url {
             projectPath = url.path
+            detectedPlatform = Platform.detect(in: url.path)
             storageService.lastProjectPath = url.path
             loadLinks()
         }
@@ -241,6 +245,7 @@ struct MainPopoverView: View {
     private func loadLastProject() {
         if let path = storageService.lastProjectPath {
             projectPath = path
+            detectedPlatform = Platform.detect(in: path)
             loadLinks()
         }
     }
@@ -282,9 +287,13 @@ struct MainPopoverView: View {
     }
 
     private func triggerLink(url: String) {
+        guard let platform = detectedPlatform else {
+            triggerStatus = .failure("Could not detect platform — select a project folder")
+            return
+        }
         Task {
             do {
-                try await simulatorService.openURL(url)
+                try await simulatorService.openURL(url, platform: platform)
                 triggerStatus = .success(url)
             } catch {
                 triggerStatus = .failure(error.localizedDescription)
