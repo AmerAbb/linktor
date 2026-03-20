@@ -72,6 +72,13 @@ struct MainPopoverView: View {
 
             Spacer()
 
+            Button(action: { loadLinks() }) {
+                Image(systemName: "arrow.clockwise")
+            }
+            .buttonStyle(.borderless)
+            .help("Reload .deeplinks.json")
+            .disabled(projectPath == nil)
+
             Button(action: { showQuickAdd = true }) {
                 Image(systemName: "plus")
             }
