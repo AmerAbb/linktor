@@ -1,6 +1,6 @@
 # DeepLink Trigger
 
-A macOS menu bar app for triggering deep links on iOS Simulators and Android Emulators during development.
+A macOS menu bar app for triggering deep links on iOS Simulators, Android Emulators, and physical devices during development.
 
 ![macOS](https://img.shields.io/badge/macOS-menu%20bar-blue)
 ![Swift](https://img.shields.io/badge/Swift-5-orange)
@@ -12,7 +12,8 @@ DeepLink Trigger sits in your menu bar and lets you open deep links on a running
 
 **Key features:**
 
-- One-click deep link triggering on iOS Simulator (`xcrun simctl`) or Android Emulator (`adb`)
+- One-click deep link triggering on iOS Simulator/physical device or Android Emulator/physical device
+- Device picker with auto-selection (physical devices preferred)
 - Auto-detects platform based on project files (`.xcodeproj` = iOS, `build.gradle` = Android)
 - Parameterized URLs with editable path and query parameters
 - Save presets for frequently-used parameter combinations
@@ -62,6 +63,23 @@ Place this file in the root of your project directory. The app reads it to build
 ```
 
 This produces the URL `myapp://home` and triggers it on click.
+
+### With Physical iOS Device
+
+```json
+{
+  "scheme": "myapp",
+  "bundleId": "com.example.myapp",
+  "links": [
+    {
+      "name": "Home",
+      "path": "/home"
+    }
+  ]
+}
+```
+
+The `bundleId` is required for triggering deep links on physical iOS devices (via `xcrun devicectl`). It's optional for simulators and all Android devices.
 
 ### Full Example
 
@@ -119,8 +137,9 @@ This produces the URL `myapp://home` and triggers it on click.
 
 | Field    | Type   | Required | Description                                    |
 |----------|--------|----------|------------------------------------------------|
-| `scheme` | string | Yes      | Your app's URL scheme (e.g. `"myapp"` produces `myapp://`) |
-| `links`  | array  | Yes      | Array of link definitions                      |
+| `scheme`   | string | Yes      | Your app's URL scheme (e.g. `"myapp"` produces `myapp://`) |
+| `bundleId` | string | No       | App bundle identifier (e.g. `"com.example.myapp"`). Required for physical iOS devices. |
+| `links`    | array  | Yes      | Array of link definitions                      |
 
 #### Link Object
 
@@ -171,7 +190,8 @@ The same `.deeplinks.json` file works for both platforms — only the trigger me
 ## Requirements
 
 - **macOS** (menu bar app)
-- **For iOS:** Xcode with a booted Simulator
+- **For iOS Simulator:** Xcode with a booted Simulator
+- **For iOS Physical Device:** Xcode 15+ with a connected device (requires `bundleId` in config)
 - **For Android:** ADB installed. The app checks these locations in order:
   1. `~/Library/Android/sdk/platform-tools/adb`
   2. `/usr/local/bin/adb`
@@ -184,6 +204,7 @@ The same `.deeplinks.json` file works for both platforms — only the trigger me
 - **Quick Add:** Use the `+` button to add a one-off link without editing the JSON file (e.g. `myapp://debug/reset`)
 - **Refresh:** After editing `.deeplinks.json`, click the refresh button (⟳) to reload without restarting the app
 - **Search:** Use the search bar to filter links by name or path
+- **Device Picker:** Use the dropdown in the header to switch between connected devices. Physical devices are auto-selected when available. Use "Refresh Devices" to rescan.
 
 ## License
 
