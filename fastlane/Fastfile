@@ -4,9 +4,11 @@ platform :mac do
   desc "Release a new version. Usage: fastlane release bump:patch (or minor/major)"
   lane :release do |options|
     bump_type = options[:bump] || "patch"
+    root = File.expand_path("..", __dir__)
+    project_file = File.join(root, "project.yml")
 
     # Read current version from project.yml
-    project_yml = File.read("project.yml")
+    project_yml = File.read(project_file)
     current_version = project_yml.match(/MARKETING_VERSION: "(\d+\.\d+\.\d+)"/)[1]
     UI.message("Current version: #{current_version}")
 
@@ -32,14 +34,16 @@ platform :mac do
     updated_yml = project_yml
       .gsub(/MARKETING_VERSION: "#{current_version}"/, "MARKETING_VERSION: \"#{new_version}\"")
       .gsub(/CURRENT_PROJECT_VERSION: "#{current_version}"/, "CURRENT_PROJECT_VERSION: \"#{new_version}\"")
-    File.write("project.yml", updated_yml)
+    File.write(project_file, updated_yml)
 
     # Commit, tag, push — GitHub Actions handles the rest
-    git_add(path: "project.yml")
-    git_commit(path: "project.yml", message: "Bump version to #{new_version}")
-    add_git_tag(tag: "v#{new_version}")
-    push_to_git_remote(tags: true)
+    Dir.chdir(root) do
+      sh("git", "add", "project.yml")
+      sh("git", "commit", "-m", "Bump version to #{new_version}")
+      sh("git", "tag", "v#{new_version}")
+      sh("git", "push", "origin", "main", "--tags")
+    end
 
-    UI.success("🚀 v#{new_version} tagged and pushed — GitHub Actions will build and release")
+    UI.success("v#{new_version} tagged and pushed — GitHub Actions will build and release")
   end
 end
