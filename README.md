@@ -20,13 +20,13 @@ Linktor sits in your menu bar and lets you open deep links on a running simulato
 - Quick-add manual links without editing the config file
 - Search/filter across all links
 - Refresh button to reload config without restarting
-- Automatic updates — checks every 4 hours, or manually via toolbar button
+- Automatic updates — checks every 24 hours, or manually via toolbar button
 
 ## Installation
 
 Download the latest `Linktor.zip` from [GitHub Releases](https://github.com/amerabb/linktor/releases/latest), unzip, and move `Linktor.app` to your Applications folder. Launch it — the link icon appears in your menu bar.
 
-> **Note:** Linktor checks for updates automatically every 4 hours while running. You can also check manually using the update button in the toolbar.
+> **Note:** Linktor checks for updates automatically every 24 hours while running. You can also check manually using the update button in the toolbar.
 
 ### Building from Source
 

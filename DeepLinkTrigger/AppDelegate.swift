@@ -22,6 +22,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.target = self
         }
 
+        // Check for updates immediately on launch
+        updaterController.updater.checkForUpdatesInBackground()
+
         let contentView = MainPopoverView(updater: updaterController.updater)
         popover = NSPopover()
         popover.contentSize = NSSize(width: 380, height: 500)
