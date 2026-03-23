@@ -1,9 +1,15 @@
 import AppKit
+import Sparkle
 import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private var statusItem: NSStatusItem!
     private var popover: NSPopover!
+    private let updaterController = SPUStandardUpdaterController(
+        startingUpdater: true,
+        updaterDelegate: nil,
+        userDriverDelegate: nil
+    )
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // Hide dock icon — menu bar only app
@@ -16,7 +22,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             button.target = self
         }
 
-        let contentView = MainPopoverView()
+        let contentView = MainPopoverView(updater: updaterController.updater)
         popover = NSPopover()
         popover.contentSize = NSSize(width: 380, height: 500)
         popover.behavior = .transient

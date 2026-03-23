@@ -1,6 +1,10 @@
 import SwiftUI
+import Sparkle
 
 struct MainPopoverView: View {
+    let updater: SPUUpdater
+    @StateObject private var checkForUpdatesViewModel: CheckForUpdatesViewModel
+
     @State private var searchText = ""
     @State private var deepLinks: [DeepLink] = []
     @State private var projectPath: String?
@@ -17,6 +21,11 @@ struct MainPopoverView: View {
     private let configLoader = ConfigLoader()
     private let deviceService = DeviceService()
     private let storageService = StorageService()
+
+    init(updater: SPUUpdater) {
+        self.updater = updater
+        _checkForUpdatesViewModel = StateObject(wrappedValue: CheckForUpdatesViewModel(updater: updater))
+    }
 
     private var filteredLinks: [DeepLink] {
         if searchText.isEmpty { return deepLinks }
@@ -98,6 +107,13 @@ struct MainPopoverView: View {
             }
             .buttonStyle(.borderless)
             .help("Select project folder")
+
+            Button(action: { updater.checkForUpdates() }) {
+                Image(systemName: "arrow.triangle.2.circlepath")
+            }
+            .buttonStyle(.borderless)
+            .help("Check for Updates")
+            .disabled(!checkForUpdatesViewModel.canCheckForUpdates)
 
             Button(action: { NSApplication.shared.terminate(nil) }) {
                 Image(systemName: "xmark.circle")
