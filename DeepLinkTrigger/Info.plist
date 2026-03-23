@@ -7,7 +7,7 @@
 	<key>SUFeedURL</key>
 	<string>https://github.com/amerabb/linktor/releases/latest/download/appcast.xml</string>
 	<key>SUPublicEDKey</key>
-	<string>REPLACE_WITH_PUBLIC_KEY</string>
+	<string>oQ1DeJTP1E6RW5uLURq29SrOobZWKoAz6wesMmFAKZg=</string>
 	<key>SUEnableAutomaticChecks</key>
 	<true/>
 	<key>SUScheduledCheckInterval</key>
