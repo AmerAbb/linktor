@@ -194,19 +194,15 @@ The same `.deeplinks.json` file works for both platforms — only the trigger me
 
 ## Releasing a New Version
 
-Releases are automated via GitHub Actions. Just bump the version and push a tag:
+Releases are automated. Run one command and GitHub Actions handles the rest:
 
-1. Bump `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `project.yml`
-2. Commit and tag:
-   ```bash
-   git add project.yml
-   git commit -m "Bump version to x.y.z"
-   git tag vx.y.z
-   git push origin main --tags
-   ```
-3. GitHub Actions automatically builds, archives, signs, and creates a GitHub Release with the zip + appcast
+```bash
+fastlane release bump:patch   # 0.1.0 → 0.1.1
+fastlane release bump:minor   # 0.1.0 → 0.2.0
+fastlane release bump:major   # 0.1.0 → 1.0.0
+```
 
-The workflow runs on `macos-15` runners and handles everything: XcodeGen, SPM resolution, archiving, exporting, Sparkle appcast generation, and release creation.
+This bumps the version in `project.yml`, commits, tags, and pushes. GitHub Actions then builds, archives, signs the appcast, and creates the GitHub Release automatically.
 
 ## Contributing
 
