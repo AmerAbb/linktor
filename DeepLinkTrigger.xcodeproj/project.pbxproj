@@ -10,17 +10,18 @@
 		126A416B0DBFCC1E357E121F /* DeepLink.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB25CFD99FC66607C4F35998 /* DeepLink.swift */; };
 		1D297363F56B6D32A1CB3D8E /* Preset.swift in Sources */ = {isa = PBXBuildFile; fileRef = 000154EBE6ADBC51D127D500 /* Preset.swift */; };
 		2FED96477070CCDB9EE72CED /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3E8EB2594A788B2A7F5F3D9 /* AppDelegate.swift */; };
+		409BEF90075A638195746A8E /* Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66598E821CF027437C663D60 /* Device.swift */; };
 		4BD76DA7892D9C43A93E500B /* PresetRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1FC7C6636D37F4F26ED922DA /* PresetRow.swift */; };
 		4EBA446BF41CE9106E5D8D84 /* StorageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9961F6F3151765D34969985 /* StorageService.swift */; };
 		6714A80689C0E018599F88D6 /* DeepLinkTriggerApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58A73571455E1201C4DE13FF /* DeepLinkTriggerApp.swift */; };
 		68EAA9FCB20887D593BD7F31 /* URLBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2C37E88B6A6AEDC3F25116E /* URLBuilder.swift */; };
 		85B3B2BD50FE27222FE0CD34 /* QuickAddView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 237740CBEFDD466A2A184C83 /* QuickAddView.swift */; };
-		86578BD1FBF64D2BCE696270 /* SimulatorService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E459FE4CF158509B7E73176 /* SimulatorService.swift */; };
 		881C79B67ED5E7FC74579FF0 /* DeepLinkConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 41292DEE45BF45CEC1FEE59D /* DeepLinkConfig.swift */; };
 		901C5FC50E2A1421FAE8C252 /* ConfigLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFEA65ABE8808B2B5A4AFAC0 /* ConfigLoader.swift */; };
 		A649C44EEF675B59B5186CEF /* ParamFormView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DB8DD2CE0DA46B6ED93FC43 /* ParamFormView.swift */; };
 		C71207AB963E968FB36114FB /* DeepLinkRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0A66ADF5073F2001B237DE0 /* DeepLinkRow.swift */; };
 		ED93BFFE3EF5909CE5854D42 /* MainPopoverView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86A5077D3067859C136FD182 /* MainPopoverView.swift */; };
+		F65130A79F1C949E0F5AABE1 /* DeviceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3BFF5C33828E51670BE39B5 /* DeviceService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,9 +29,9 @@
 		1FC7C6636D37F4F26ED922DA /* PresetRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetRow.swift; sourceTree = "<group>"; };
 		237740CBEFDD466A2A184C83 /* QuickAddView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickAddView.swift; sourceTree = "<group>"; };
 		2DB8DD2CE0DA46B6ED93FC43 /* ParamFormView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParamFormView.swift; sourceTree = "<group>"; };
-		2E459FE4CF158509B7E73176 /* SimulatorService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SimulatorService.swift; sourceTree = "<group>"; };
 		41292DEE45BF45CEC1FEE59D /* DeepLinkConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkConfig.swift; sourceTree = "<group>"; };
 		58A73571455E1201C4DE13FF /* DeepLinkTriggerApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkTriggerApp.swift; sourceTree = "<group>"; };
+		66598E821CF027437C663D60 /* Device.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Device.swift; sourceTree = "<group>"; };
 		6AB4B7299A138D05C5836232 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		86A5077D3067859C136FD182 /* MainPopoverView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainPopoverView.swift; sourceTree = "<group>"; };
 		9B08464C34D8DFB11DD846D8 /* DeepLinkTrigger.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = DeepLinkTrigger.entitlements; sourceTree = "<group>"; };
@@ -41,6 +42,7 @@
 		CB25CFD99FC66607C4F35998 /* DeepLink.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLink.swift; sourceTree = "<group>"; };
 		E9961F6F3151765D34969985 /* StorageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StorageService.swift; sourceTree = "<group>"; };
 		F0A66ADF5073F2001B237DE0 /* DeepLinkRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeepLinkRow.swift; sourceTree = "<group>"; };
+		F3BFF5C33828E51670BE39B5 /* DeviceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceService.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -76,7 +78,7 @@
 			isa = PBXGroup;
 			children = (
 				BFEA65ABE8808B2B5A4AFAC0 /* ConfigLoader.swift */,
-				2E459FE4CF158509B7E73176 /* SimulatorService.swift */,
+				F3BFF5C33828E51670BE39B5 /* DeviceService.swift */,
 				E9961F6F3151765D34969985 /* StorageService.swift */,
 				C2C37E88B6A6AEDC3F25116E /* URLBuilder.swift */,
 			);
@@ -102,6 +104,7 @@
 			children = (
 				CB25CFD99FC66607C4F35998 /* DeepLink.swift */,
 				41292DEE45BF45CEC1FEE59D /* DeepLinkConfig.swift */,
+				66598E821CF027437C663D60 /* Device.swift */,
 				000154EBE6ADBC51D127D500 /* Preset.swift */,
 			);
 			path = Models;
@@ -171,12 +174,13 @@
 				881C79B67ED5E7FC74579FF0 /* DeepLinkConfig.swift in Sources */,
 				C71207AB963E968FB36114FB /* DeepLinkRow.swift in Sources */,
 				6714A80689C0E018599F88D6 /* DeepLinkTriggerApp.swift in Sources */,
+				409BEF90075A638195746A8E /* Device.swift in Sources */,
+				F65130A79F1C949E0F5AABE1 /* DeviceService.swift in Sources */,
 				ED93BFFE3EF5909CE5854D42 /* MainPopoverView.swift in Sources */,
 				A649C44EEF675B59B5186CEF /* ParamFormView.swift in Sources */,
 				1D297363F56B6D32A1CB3D8E /* Preset.swift in Sources */,
 				4BD76DA7892D9C43A93E500B /* PresetRow.swift in Sources */,
 				85B3B2BD50FE27222FE0CD34 /* QuickAddView.swift in Sources */,
-				86578BD1FBF64D2BCE696270 /* SimulatorService.swift in Sources */,
 				4EBA446BF41CE9106E5D8D84 /* StorageService.swift in Sources */,
 				68EAA9FCB20887D593BD7F31 /* URLBuilder.swift in Sources */,
 			);

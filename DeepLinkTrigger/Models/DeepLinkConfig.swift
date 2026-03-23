@@ -3,6 +3,7 @@ import Foundation
 /// Represents the `.deeplinks.json` file schema
 struct DeepLinkConfig: Codable {
     let scheme: String
+    let bundleId: String?
     let links: [LinkDefinition]
 }
 

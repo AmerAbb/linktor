@@ -1,5 +1,6 @@
 {
   "scheme": "myapp",
+  "bundleId": "com.example.myapp",
   "links": [
     {
       "name": "Home",

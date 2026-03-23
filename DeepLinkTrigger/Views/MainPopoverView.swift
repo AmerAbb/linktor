@@ -10,9 +10,12 @@ struct MainPopoverView: View {
     @State private var expandedLinkID: UUID?
     @State private var triggerStatus: TriggerStatus?
     @State private var statusClearID = 0
+    @State private var devices: [Device] = []
+    @State private var selectedDevice: Device?
+    @State private var bundleId: String?
 
     private let configLoader = ConfigLoader()
-    private let simulatorService = SimulatorService()
+    private let deviceService = DeviceService()
     private let storageService = StorageService()
 
     private var filteredLinks: [DeepLink] {
@@ -73,6 +76,10 @@ struct MainPopoverView: View {
 
             Spacer()
 
+            if !devices.isEmpty || detectedPlatform != nil {
+                devicePicker
+            }
+
             Button(action: { loadLinks() }) {
                 Image(systemName: "arrow.clockwise")
             }
@@ -116,6 +123,46 @@ struct MainPopoverView: View {
         .cornerRadius(8)
         .padding(.horizontal, 12)
         .padding(.bottom, 8)
+    }
+
+    // MARK: - Device Picker
+
+    private var devicePicker: some View {
+        Menu {
+            if devices.isEmpty {
+                Text("No devices found")
+            } else {
+                ForEach(devices) { device in
+                    Button(action: { selectedDevice = device }) {
+                        HStack {
+                            if selectedDevice?.id == device.id {
+                                Image(systemName: "checkmark")
+                            }
+                            Text(device.displayName)
+                        }
+                    }
+                }
+            }
+            Divider()
+            Button("Refresh Devices") {
+                refreshDevices()
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: selectedDevice?.type == .physical ? "iphone" : "desktopcomputer")
+                    .font(.caption)
+                Text(selectedDevice?.name ?? "No Device")
+                    .font(.caption)
+                    .lineLimit(1)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.system(size: 8))
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(.quaternary, in: RoundedRectangle(cornerRadius: 4))
+        }
+        .buttonStyle(.borderless)
+        .fixedSize()
     }
 
     // MARK: - Link List
@@ -241,6 +288,22 @@ struct MainPopoverView: View {
 
     // MARK: - Actions
 
+    @MainActor
+    private func refreshDevices() {
+        guard let platform = detectedPlatform else { return }
+        Task {
+            let found = await deviceService.listDevices(platform: platform)
+            devices = found
+            // Preserve current selection if still available
+            if let current = selectedDevice, found.contains(where: { $0.id == current.id }) {
+                // keep current
+            } else {
+                // Auto-select: physical first (already sorted by sortKey)
+                selectedDevice = found.first
+            }
+        }
+    }
+
     private func selectProject() {
         let panel = NSOpenPanel()
         panel.canChooseDirectories = true
@@ -272,6 +335,7 @@ struct MainPopoverView: View {
         // Load from config file
         do {
             let config = try configLoader.load(from: path)
+            bundleId = config.bundleId
             allLinks += config.links.map { DeepLink.from(definition: $0, scheme: config.scheme) }
         } catch is ConfigLoader.ConfigError {
             // No config file — that's OK, we may still have manual links
@@ -298,17 +362,18 @@ struct MainPopoverView: View {
         }
 
         deepLinks = allLinks
+        refreshDevices()
     }
 
     private func triggerLink(url: String) {
-        guard let platform = detectedPlatform else {
-            triggerStatus = .failure("Could not detect platform — select a project folder")
+        guard let device = selectedDevice else {
+            triggerStatus = .failure("No device selected — connect a device or start a simulator")
             scheduleClearStatus()
             return
         }
         Task {
             do {
-                try await simulatorService.openURL(url, platform: platform)
+                try await deviceService.openURL(url, device: device, bundleId: bundleId)
                 triggerStatus = .success(url)
             } catch {
                 triggerStatus = .failure(error.localizedDescription)
