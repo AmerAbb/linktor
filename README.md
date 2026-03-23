@@ -1,6 +1,6 @@
-# DeepLink Trigger
+# Linktor
 
-A macOS menu bar app for triggering deep links on iOS Simulators, Android Emulators, and physical devices during development.
+A macOS menu bar app for triggering deep links on iOS and Android devices.
 
 ![macOS](https://img.shields.io/badge/macOS-menu%20bar-blue)
 ![Swift](https://img.shields.io/badge/Swift-5-orange)
@@ -8,7 +8,7 @@ A macOS menu bar app for triggering deep links on iOS Simulators, Android Emulat
 
 ## What It Does
 
-DeepLink Trigger sits in your menu bar and lets you open deep links on a running simulator/emulator with one click. You define your links in a `.deeplinks.json` file in your project root, point the app at the folder, and it builds a browsable, searchable list with editable parameters.
+Linktor sits in your menu bar and lets you open deep links on a running simulator, emulator, or connected physical device with one click. You define your links in a `.deeplinks.json` file in your project root, point the app at the folder, and it builds a browsable, searchable list with editable parameters.
 
 **Key features:**
 
@@ -20,22 +20,22 @@ DeepLink Trigger sits in your menu bar and lets you open deep links on a running
 - Quick-add manual links without editing the config file
 - Search/filter across all links
 - Refresh button to reload config without restarting
+- Automatic updates — checks every 4 hours, or manually via toolbar button
 
 ## Installation
 
-1. Download or build the app from source using Xcode
-2. Move `DeepLink Trigger.app` to your Applications folder
-3. Launch it — the link icon (🔗) appears in your menu bar
+Download the latest `Linktor.zip` from [GitHub Releases](https://github.com/amerabb/linktor/releases/latest), unzip, and move `Linktor.app` to your Applications folder. Launch it — the link icon appears in your menu bar.
+
+> **Note:** Linktor checks for updates automatically every 4 hours while running. You can also check manually using the update button in the toolbar.
 
 ### Building from Source
 
 ```bash
-# Using xcodebuild
-xcodebuild -project DeepLinkTrigger.xcodeproj -scheme DeepLinkTrigger -configuration Release
-
-# Or using XcodeGen + Xcode
+# Generate the Xcode project
 xcodegen generate
-open DeepLinkTrigger.xcodeproj
+
+# Build a release binary
+xcodebuild -project DeepLinkTrigger.xcodeproj -scheme DeepLinkTrigger -configuration Release
 ```
 
 ## Quick Start
@@ -79,7 +79,7 @@ This produces the URL `myapp://home` and triggers it on click.
 }
 ```
 
-The `bundleId` is required for triggering deep links on physical iOS devices (via `xcrun devicectl`). It's optional for simulators and all Android devices.
+The `bundleId` is required for triggering deep links on physical iOS devices (via `xcrun devicectl`). It is optional for simulators and all Android devices.
 
 ### Full Example
 
@@ -87,27 +87,17 @@ The `bundleId` is required for triggering deep links on physical iOS devices (vi
 {
   "scheme": "myapp",
   "links": [
-    {
-      "name": "Home",
-      "path": "/home"
-    },
-    {
-      "name": "Profile",
-      "path": "/profile"
-    },
+    { "name": "Home", "path": "/home" },
+    { "name": "Profile", "path": "/profile" },
     {
       "name": "Product Detail",
       "path": "/product/{productId}",
-      "params": {
-        "productId": { "type": "string", "default": "12345" }
-      }
+      "params": { "productId": { "type": "string", "default": "12345" } }
     },
     {
       "name": "Category",
       "path": "/category/{categoryId}/items",
-      "params": {
-        "categoryId": { "type": "string", "default": "electronics" }
-      }
+      "params": { "categoryId": { "type": "string", "default": "electronics" } }
     },
     {
       "name": "Search",
@@ -120,12 +110,8 @@ The `bundleId` is required for triggering deep links on physical iOS devices (vi
     {
       "name": "User Profile",
       "path": "/user/{userId}/profile",
-      "params": {
-        "userId": { "type": "string", "default": "42" }
-      },
-      "queryParams": {
-        "tab": { "type": "string", "default": "overview" }
-      }
+      "params": { "userId": { "type": "string", "default": "42" } },
+      "queryParams": { "tab": { "type": "string", "default": "overview" } }
     }
   ]
 }
@@ -135,27 +121,27 @@ The `bundleId` is required for triggering deep links on physical iOS devices (vi
 
 #### Root Object
 
-| Field    | Type   | Required | Description                                    |
-|----------|--------|----------|------------------------------------------------|
-| `scheme`   | string | Yes      | Your app's URL scheme (e.g. `"myapp"` produces `myapp://`) |
+| Field      | Type   | Required | Description                                                                         |
+|------------|--------|----------|-------------------------------------------------------------------------------------|
+| `scheme`   | string | Yes      | Your app's URL scheme (e.g. `"myapp"` produces `myapp://`)                          |
 | `bundleId` | string | No       | App bundle identifier (e.g. `"com.example.myapp"`). Required for physical iOS devices. |
-| `links`    | array  | Yes      | Array of link definitions                      |
+| `links`    | array  | Yes      | Array of link definitions                                                           |
 
 #### Link Object
 
-| Field         | Type   | Required | Description                                         |
-|---------------|--------|----------|-----------------------------------------------------|
-| `name`        | string | Yes      | Display name shown in the menu                      |
-| `path`        | string | Yes      | URL path. Use `{paramName}` for path parameters     |
-| `params`      | object | No       | Path parameter definitions, keyed by parameter name |
-| `queryParams` | object | No       | Query parameter definitions, keyed by parameter name|
+| Field         | Type   | Required | Description                                          |
+|---------------|--------|----------|------------------------------------------------------|
+| `name`        | string | Yes      | Display name shown in the menu                       |
+| `path`        | string | Yes      | URL path. Use `{paramName}` for path parameters      |
+| `params`      | object | No       | Path parameter definitions, keyed by parameter name  |
+| `queryParams` | object | No       | Query parameter definitions, keyed by parameter name |
 
 #### Parameter Object (used in both `params` and `queryParams`)
 
-| Field     | Type   | Required | Description                           |
-|-----------|--------|----------|---------------------------------------|
-| `type`    | string | Yes      | Parameter type (e.g. `"string"`)      |
-| `default` | string | Yes      | Default value shown in the form       |
+| Field     | Type   | Required | Description                      |
+|-----------|--------|----------|----------------------------------|
+| `type`    | string | Yes      | Parameter type (e.g. `"string"`) |
+| `default` | string | Yes      | Default value shown in the form  |
 
 ### URL Construction
 
@@ -167,12 +153,12 @@ The app builds URLs following this pattern:
 
 **Examples based on the config above:**
 
-| Link | Resulting URL |
-|------|---------------|
-| Home | `myapp://home` |
-| Product Detail | `myapp://product/12345` |
-| Search | `myapp://search?q=shoes&ref=home` |
-| User Profile | `myapp://user/42/profile?tab=overview` |
+| Link           | Resulting URL                          |
+|----------------|----------------------------------------|
+| Home           | `myapp://home`                         |
+| Product Detail | `myapp://product/12345`                |
+| Search         | `myapp://search?q=shoes&ref=home`      |
+| User Profile   | `myapp://user/42/profile?tab=overview` |
 
 Path parameters (`params`) replace `{placeholders}` in the path. Query parameters (`queryParams`) are appended as a query string. All values are editable in the UI before triggering.
 
@@ -180,9 +166,9 @@ Path parameters (`params`) replace `{placeholders}` in the path. Query parameter
 
 The app auto-detects the platform when you open a project folder:
 
-| Platform | Detected when project contains              |
-|----------|----------------------------------------------|
-| iOS      | `.xcodeproj`, `.xcworkspace`, or `Package.swift` |
+| Platform | Detected when project contains                                                                      |
+|----------|-----------------------------------------------------------------------------------------------------|
+| iOS      | `.xcodeproj`, `.xcworkspace`, or `Package.swift`                                                    |
 | Android  | `build.gradle`, `build.gradle.kts`, `settings.gradle`, `settings.gradle.kts`, or `app/build.gradle` |
 
 The same `.deeplinks.json` file works for both platforms — only the trigger mechanism changes.
@@ -205,6 +191,29 @@ The same `.deeplinks.json` file works for both platforms — only the trigger me
 - **Refresh:** After editing `.deeplinks.json`, click the refresh button (⟳) to reload without restarting the app
 - **Search:** Use the search bar to filter links by name or path
 - **Device Picker:** Use the dropdown in the header to switch between connected devices. Physical devices are auto-selected when available. Use "Refresh Devices" to rescan.
+
+## Releasing a New Version
+
+1. Bump `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `project.yml`
+2. Run `xcodegen generate`
+3. In Xcode: **Product → Archive → Distribute App → Direct Distribution → Export**
+4. Zip the exported `.app`:
+   ```bash
+   zip -r Linktor.zip Linktor.app
+   ```
+5. Generate the appcast:
+   ```bash
+   generate_appcast /path/to/zips/ --download-url-prefix "https://github.com/amerabb/linktor/releases/download/v<version>/"
+   ```
+6. Tag and push:
+   ```bash
+   git tag v<version> && git push origin v<version>
+   ```
+7. Create a GitHub Release, attach `Linktor.zip` and `appcast.xml`
+
+## Contributing
+
+Contributions welcome via pull requests. Fork the repo, create a feature branch, and open a PR. Only the maintainer pushes directly to `main`.
 
 ## License
 

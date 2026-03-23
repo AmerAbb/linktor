@@ -8,3 +8,11 @@ DerivedData/
 
 # Build
 build/
+
+# SPM
+.build/
+Package.resolved
+
+# Distribution
+*.app/
+*.zip
