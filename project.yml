@@ -20,5 +20,5 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.deeplinkTrigger.DeepLinkTrigger
         MACOSX_DEPLOYMENT_TARGET: "14.0"
         CODE_SIGN_STYLE: Automatic
-        PRODUCT_NAME: DeepLink Trigger
+        PRODUCT_NAME: Linktor
         GENERATE_INFOPLIST_FILE: false

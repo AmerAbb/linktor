@@ -70,7 +70,7 @@ struct MainPopoverView: View {
                     .font(.headline)
                     .lineLimit(1)
             } else {
-                Text("DeepLink Trigger")
+                Text("Linktor")
                     .font(.headline)
             }
 
@@ -103,7 +103,7 @@ struct MainPopoverView: View {
                 Image(systemName: "xmark.circle")
             }
             .buttonStyle(.borderless)
-            .help("Quit DeepLink Trigger")
+            .help("Quit Linktor")
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
