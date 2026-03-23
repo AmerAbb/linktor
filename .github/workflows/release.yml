@@ -1,0 +1,93 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-release:
+    runs-on: macos-15
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install XcodeGen
+        run: brew install xcodegen
+
+      - name: Generate Xcode project
+        run: xcodegen generate
+
+      - name: Resolve SPM dependencies
+        run: xcodebuild -project DeepLinkTrigger.xcodeproj -scheme DeepLinkTrigger -resolvePackageDependencies
+
+      - name: Archive
+        run: |
+          xcodebuild -project DeepLinkTrigger.xcodeproj \
+            -scheme DeepLinkTrigger \
+            -configuration Release \
+            -archivePath $RUNNER_TEMP/Linktor.xcarchive \
+            archive
+
+      - name: Export app
+        run: |
+          cat > $RUNNER_TEMP/ExportOptions.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key>
+            <string>mac-application</string>
+            <key>signingStyle</key>
+            <string>automatic</string>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath $RUNNER_TEMP/Linktor.xcarchive \
+            -exportPath $RUNNER_TEMP/export \
+            -exportOptionsPlist $RUNNER_TEMP/ExportOptions.plist
+
+      - name: Zip app
+        run: |
+          cd $RUNNER_TEMP/export
+          zip -r -y $RUNNER_TEMP/Linktor.zip Linktor.app
+
+      - name: Generate appcast
+        env:
+          SPARKLE_PRIVATE_KEY: ${{ secrets.SPARKLE_PRIVATE_KEY }}
+        run: |
+          # Find generate_appcast from resolved Sparkle package
+          GENERATE_APPCAST=$(find ~/Library/Developer/Xcode/DerivedData -name "generate_appcast" -type f | head -1)
+
+          # Write private key to temp file
+          echo -n "$SPARKLE_PRIVATE_KEY" > $RUNNER_TEMP/sparkle_key
+
+          # Copy zip to a staging dir for generate_appcast
+          mkdir -p $RUNNER_TEMP/release
+          cp $RUNNER_TEMP/Linktor.zip $RUNNER_TEMP/release/
+
+          # Extract tag name (v0.2.0 -> v0.2.0)
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+
+          $GENERATE_APPCAST $RUNNER_TEMP/release/ \
+            --ed-key-file $RUNNER_TEMP/sparkle_key \
+            --download-url-prefix "https://github.com/${{ github.repository }}/releases/download/$TAG_NAME/"
+
+          # Clean up key
+          rm $RUNNER_TEMP/sparkle_key
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG_NAME=${GITHUB_REF#refs/tags/}
+          gh release create "$TAG_NAME" \
+            $RUNNER_TEMP/Linktor.zip \
+            $RUNNER_TEMP/release/appcast.xml \
+            --title "$TAG_NAME" \
+            --generate-notes \
+            --latest

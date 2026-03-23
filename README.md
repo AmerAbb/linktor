@@ -194,22 +194,19 @@ The same `.deeplinks.json` file works for both platforms — only the trigger me
 
 ## Releasing a New Version
 
+Releases are automated via GitHub Actions. Just bump the version and push a tag:
+
 1. Bump `MARKETING_VERSION` and `CURRENT_PROJECT_VERSION` in `project.yml`
-2. Run `xcodegen generate`
-3. In Xcode: **Product → Archive → Distribute App → Direct Distribution → Export**
-4. Zip the exported `.app`:
+2. Commit and tag:
    ```bash
-   zip -r Linktor.zip Linktor.app
+   git add project.yml
+   git commit -m "Bump version to x.y.z"
+   git tag vx.y.z
+   git push origin main --tags
    ```
-5. Generate the appcast:
-   ```bash
-   generate_appcast /path/to/zips/ --download-url-prefix "https://github.com/amerabb/linktor/releases/download/v<version>/"
-   ```
-6. Tag and push:
-   ```bash
-   git tag v<version> && git push origin v<version>
-   ```
-7. Create a GitHub Release, attach `Linktor.zip` and `appcast.xml`
+3. GitHub Actions automatically builds, archives, signs, and creates a GitHub Release with the zip + appcast
+
+The workflow runs on `macos-15` runners and handles everything: XcodeGen, SPM resolution, archiving, exporting, Sparkle appcast generation, and release creation.
 
 ## Contributing
 
