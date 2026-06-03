@@ -1,6 +1,7 @@
 {
   "scheme": "myapp",
   "bundleId": "com.example.myapp",
+  "platform": "ios",
   "links": [
     {
       "name": "Home",

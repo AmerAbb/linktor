@@ -81,6 +81,25 @@ This produces the URL `myapp://home` and triggers it on click.
 
 The `bundleId` is required for triggering deep links on physical iOS devices (via `xcrun devicectl`). It is optional for simulators and all Android devices.
 
+### Standalone Usage (no project alongside the file)
+
+By default the app figures out the platform by scanning the selected folder for project markers (`.xcodeproj` = iOS, `build.gradle` = Android). If you hand someone **just** the `.deeplinks.json` file — with no project around it — that auto-detection has nothing to match, so no devices would show up.
+
+To make the file work on its own, add a `"platform"` field:
+
+```json
+{
+  "scheme": "myapp",
+  "bundleId": "com.example.myapp",
+  "platform": "ios",
+  "links": [
+    { "name": "Home", "path": "/home" }
+  ]
+}
+```
+
+`"platform"` accepts `"ios"` or `"android"`. When present it takes priority over folder scanning, so device discovery works even on a machine that only has the JSON file (and the relevant SDK/Xcode installed). If it's omitted and the platform still can't be detected, the app shows a **Select Platform** menu so the user can pick manually.
+
 ### Full Example
 
 ```json
@@ -125,6 +144,7 @@ The `bundleId` is required for triggering deep links on physical iOS devices (vi
 |------------|--------|----------|-------------------------------------------------------------------------------------|
 | `scheme`   | string | Yes      | Your app's URL scheme (e.g. `"myapp"` produces `myapp://`)                          |
 | `bundleId` | string | No       | App bundle identifier (e.g. `"com.example.myapp"`). Required for physical iOS devices. |
+| `platform` | string | No       | `"ios"` or `"android"`. Declares the platform so devices list without a project alongside the file. Falls back to folder auto-detection when omitted. |
 | `links`    | array  | Yes      | Array of link definitions                                                           |
 
 #### Link Object

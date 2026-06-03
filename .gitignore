@@ -13,6 +13,12 @@ build/
 .build/
 Package.resolved
 
+# XcodeGen-generated workspace
+*.xcworkspace/
+
+# fastlane artifacts
+fastlane/report.xml
+
 # Distribution
 *.app/
 *.zip

@@ -4,6 +4,9 @@ import Foundation
 struct DeepLinkConfig: Codable {
     let scheme: String
     let bundleId: String?
+    /// Optional `"ios"` / `"android"`. Lets the config declare its own platform so the
+    /// app can list devices even when shipped standalone (no project alongside it).
+    let platform: String?
     let links: [LinkDefinition]
 }
 

@@ -87,6 +87,8 @@ struct MainPopoverView: View {
 
             if !devices.isEmpty || detectedPlatform != nil {
                 devicePicker
+            } else if projectPath != nil {
+                platformPicker
             }
 
             Button(action: { loadLinks() }) {
@@ -179,6 +181,39 @@ struct MainPopoverView: View {
         }
         .buttonStyle(.borderless)
         .fixedSize()
+    }
+
+    // MARK: - Platform Picker
+
+    /// Shown when the platform can't be auto-detected (e.g. only `.deeplinks.json` is present,
+    /// with no `"platform"` field and no project marker files). Lets the user pick manually
+    /// so devices can still be listed. Best practice is to add `"platform"` to the config.
+    private var platformPicker: some View {
+        Menu {
+            Button("iOS") {
+                detectedPlatform = .ios
+                refreshDevices()
+            }
+            Button("Android") {
+                detectedPlatform = .android
+                refreshDevices()
+            }
+        } label: {
+            HStack(spacing: 4) {
+                Image(systemName: "questionmark.circle")
+                    .font(.caption)
+                Text("Select Platform")
+                    .font(.caption)
+                Image(systemName: "chevron.up.chevron.down")
+                    .font(.system(size: 8))
+            }
+            .padding(.horizontal, 6)
+            .padding(.vertical, 3)
+            .background(.quaternary, in: RoundedRectangle(cornerRadius: 4))
+        }
+        .buttonStyle(.borderless)
+        .fixedSize()
+        .help("Platform couldn't be detected — pick one, or add a \"platform\" field to .deeplinks.json")
     }
 
     // MARK: - Link List
@@ -352,6 +387,9 @@ struct MainPopoverView: View {
         do {
             let config = try configLoader.load(from: path)
             bundleId = config.bundleId
+            // Prefer the platform declared in the config (works when shipped standalone),
+            // and fall back to scanning the folder for project marker files.
+            detectedPlatform = Platform.from(string: config.platform) ?? Platform.detect(in: path)
             allLinks += config.links.map { DeepLink.from(definition: $0, scheme: config.scheme) }
         } catch is ConfigLoader.ConfigError {
             // No config file — that's OK, we may still have manual links

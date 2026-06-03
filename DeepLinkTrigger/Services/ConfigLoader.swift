@@ -18,6 +18,15 @@ enum Platform {
         }
     }
 
+    /// Parses an explicit platform string from `.deeplinks.json` (e.g. `"ios"`, `"android"`).
+    static func from(string: String?) -> Platform? {
+        switch string?.lowercased() {
+        case "ios": return .ios
+        case "android": return .android
+        default: return nil
+        }
+    }
+
     /// Detects the project platform by checking for marker files
     static func detect(in directoryPath: String) -> Platform? {
         let fm = FileManager.default
