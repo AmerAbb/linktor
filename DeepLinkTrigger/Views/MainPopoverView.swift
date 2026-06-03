@@ -16,7 +16,9 @@ struct MainPopoverView: View {
     @State private var statusClearID = 0
     @State private var devices: [Device] = []
     @State private var selectedDevice: Device?
+    @State private var deviceError: String?
     @State private var bundleId: String?
+    @State private var shareTarget: ShareTarget?
 
     private let configLoader = ConfigLoader()
     private let deviceService = DeviceService()
@@ -63,6 +65,9 @@ struct MainPopoverView: View {
             QuickAddView { name, url in
                 addManualLink(name: name, url: url)
             }
+        }
+        .sheet(item: $shareTarget) { target in
+            ShareLinkSheet(url: target.url)
         }
     }
 
@@ -149,6 +154,10 @@ struct MainPopoverView: View {
         Menu {
             if devices.isEmpty {
                 Text("No devices found")
+                if let deviceError {
+                    Text(deviceError)
+                }
+                Text("Tip: trigger a link to get a QR code / copy the URL — no device needed.")
             } else {
                 ForEach(devices) { device in
                     Button(action: { selectedDevice = device }) {
@@ -222,14 +231,34 @@ struct MainPopoverView: View {
         ScrollView {
             LazyVStack(spacing: 2) {
                 ForEach(filteredLinks) { link in
-                    if link.source == .preset {
-                        PresetRow(link: link) {
-                            triggerLink(url: link.path)
-                        } onDelete: {
-                            deletePreset(link)
+                    rowView(for: link)
+                        .contextMenu {
+                            Button("Show QR Code") {
+                                shareTarget = ShareTarget(url: defaultURL(for: link))
+                            }
+                            Button("Copy URL") {
+                                let url = defaultURL(for: link)
+                                NSPasteboard.general.clearContents()
+                                NSPasteboard.general.setString(url, forType: .string)
+                            }
                         }
-                    } else {
-                        DeepLinkRow(
+                }
+            }
+            .padding(.horizontal, 8)
+            .padding(.vertical, 4)
+        }
+    }
+
+    @ViewBuilder
+    private func rowView(for link: DeepLink) -> some View {
+        if link.source == .preset {
+            PresetRow(link: link) {
+                triggerLink(url: link.path)
+            } onDelete: {
+                deletePreset(link)
+            }
+        } else {
+            DeepLinkRow(
                             link: link,
                             isExpanded: expandedLinkID == link.id,
                             onTap: {
@@ -252,11 +281,17 @@ struct MainPopoverView: View {
                             },
                             onDelete: link.source == .manual ? { deleteManualLink(link) } : nil
                         )
-                    }
-                }
-            }
-            .padding(.horizontal, 8)
-            .padding(.vertical, 4)
+        }
+    }
+
+    /// The URL for a link using default param values — used by the context-menu
+    /// QR/Copy actions, which act without expanding the row.
+    private func defaultURL(for link: DeepLink) -> String {
+        switch link.source {
+        case .manual, .preset:
+            return link.path
+        case .config:
+            return URLBuilder.buildURL(from: link, pathValues: [:], queryValues: [:])
         }
     }
 
@@ -343,14 +378,15 @@ struct MainPopoverView: View {
     private func refreshDevices() {
         guard let platform = detectedPlatform else { return }
         Task {
-            let found = await deviceService.listDevices(platform: platform)
-            devices = found
+            let result = await deviceService.listDevices(platform: platform)
+            devices = result.devices
+            deviceError = result.error
             // Preserve current selection if still available
-            if let current = selectedDevice, found.contains(where: { $0.id == current.id }) {
+            if let current = selectedDevice, result.devices.contains(where: { $0.id == current.id }) {
                 // keep current
             } else {
                 // Auto-select: physical first (already sorted by sortKey)
-                selectedDevice = found.first
+                selectedDevice = result.devices.first
             }
         }
     }
@@ -421,8 +457,9 @@ struct MainPopoverView: View {
 
     private func triggerLink(url: String) {
         guard let device = selectedDevice else {
-            triggerStatus = .failure("No device selected — connect a device or start a simulator")
-            scheduleClearStatus()
+            // No reachable device (e.g. a physical iPhone on a Mac without Xcode tooling).
+            // Fall back to QR/copy so the link can be opened on the device directly.
+            shareTarget = ShareTarget(url: url)
             return
         }
         Task {

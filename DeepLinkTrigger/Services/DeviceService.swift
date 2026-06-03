@@ -23,7 +23,15 @@ final class DeviceService {
 
     // MARK: - Device Discovery
 
-    func listDevices(platform: Platform) async -> [Device] {
+    /// Result of a discovery pass. `error` is populated only when no devices were
+    /// found *and* a command failed (e.g. Xcode/devicectl/adb missing), so the UI
+    /// can explain why the list is empty instead of showing nothing.
+    struct DiscoveryResult {
+        let devices: [Device]
+        let error: String?
+    }
+
+    func listDevices(platform: Platform) async -> DiscoveryResult {
         switch platform {
         case .ios:
             return await listIOSDevices()
@@ -32,20 +40,28 @@ final class DeviceService {
         }
     }
 
-    private func listIOSDevices() async -> [Device] {
+    private func listIOSDevices() async -> DiscoveryResult {
         var devices: [Device] = []
+        var errors: [String] = []
 
         // Booted simulators
-        if let simDevices = try? await listIOSSimulators() {
-            devices.append(contentsOf: simDevices)
+        do {
+            devices += try await listIOSSimulators()
+        } catch {
+            errors.append("Simulators: \(error.localizedDescription)")
         }
 
         // Physical devices via devicectl
-        if let physicalDevices = try? await listIOSPhysicalDevices() {
-            devices.append(contentsOf: physicalDevices)
+        do {
+            devices += try await listIOSPhysicalDevices()
+        } catch {
+            errors.append("Physical devices: \(error.localizedDescription)")
         }
 
-        return devices.sorted { $0.sortKey < $1.sortKey }
+        // Only surface an error if we genuinely found nothing — an empty-but-clean
+        // result (e.g. no simulator booted) isn't an error worth showing.
+        let error = devices.isEmpty && !errors.isEmpty ? errors.joined(separator: "\n") : nil
+        return DiscoveryResult(devices: devices.sorted { $0.sortKey < $1.sortKey }, error: error)
     }
 
     /// Parses `xcrun simctl list devices booted -j`.
@@ -128,13 +144,20 @@ final class DeviceService {
     /// Serials starting with `emulator-` are emulators.
     /// IP:port format (e.g. `192.168.1.5:5555`) = wireless physical device.
     /// Extracts model name from `model:<name>` field if present.
-    private func listAndroidDevices() async -> [Device] {
-        guard let adbPath = try? findADB() else { return [] }
+    private func listAndroidDevices() async -> DiscoveryResult {
+        let adbPath: String
+        do {
+            adbPath = try findADB()
+        } catch {
+            return DiscoveryResult(devices: [], error: error.localizedDescription)
+        }
 
-        guard let output = try? await runProcess(
-            executable: adbPath,
-            arguments: ["devices", "-l"]
-        ) else { return [] }
+        let output: String
+        do {
+            output = try await runProcess(executable: adbPath, arguments: ["devices", "-l"])
+        } catch {
+            return DiscoveryResult(devices: [], error: error.localizedDescription)
+        }
 
         var devices: [Device] = []
         let lines = output.components(separatedBy: "\n")
@@ -160,7 +183,7 @@ final class DeviceService {
                 type: isEmulator ? .simulator : .physical
             ))
         }
-        return devices.sorted { $0.sortKey < $1.sortKey }
+        return DiscoveryResult(devices: devices.sorted { $0.sortKey < $1.sortKey }, error: nil)
     }
 
     // MARK: - URL Opening
